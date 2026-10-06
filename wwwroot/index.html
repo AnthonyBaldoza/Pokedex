@@ -1,0 +1,2818 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
+  <circle cx='50' cy='50' r='48' fill='white' stroke='black' stroke-width='4'/>
+  <path d='M2 50h96' stroke='black' stroke-width='6'/>
+  <path d='M50 2a48 48 0 0 1 0 96' fill='red'/>
+  <circle cx='50' cy='50' r='12' fill='white' stroke='black' stroke-width='4'/>
+</svg>"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pokédex — Generation I</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --red: #cc0000;
+        --dark-red: #8b0000;
+        --light-red: #ff4444;
+        --screen-green: #9bbc0f;
+        --screen-dark: #0f380f;
+        --screen-bg: #8bac0f;
+        --yellow: #ffd700;
+        --blue-btn: #3355aa;
+        --black: #1a1a1a;
+        --white: #f8f8f8;
+        --dark-gray: #555;
+        --light-green: #b8d717;
+        --green-accent: #6ba52e;
+        --shadow-dark: rgba(0, 0, 0, 0.4);
+        --space-xs: 4px;
+        --space-sm: 8px;
+        --space-md: 12px;
+        --space-lg: 16px;
+        --space-xl: 24px;
+        --space-2xl: 32px;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+
+      /* ===== BOOT OVERLAY ===== */
+      #powerOnOverlay {
+        position: fixed;
+        inset: 0;
+        background: #000;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-family: "Press Start 2P", monospace;
+        transition: opacity 0.8s ease;
+      }
+      #powerOnOverlay.fading {
+        opacity: 0;
+        pointer-events: none;
+      }
+      #powerOnOverlay.hidden {
+        display: none;
+      }
+      .boot-screen {
+        width: min(400px, 88vw);
+        background: #0f380f;
+        border: 6px solid #1a1a1a;
+        border-radius: 8px;
+        padding: 28px 24px;
+        position: relative;
+        overflow: hidden;
+        box-shadow:
+          0 0 60px rgba(155, 188, 15, 0.2),
+          inset 0 2px 8px rgba(0, 0, 0, 0.6);
+      }
+      .boot-scanlines {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 2px,
+          rgba(0, 0, 0, 0.25) 2px,
+          rgba(0, 0, 0, 0.25) 4px
+        );
+        animation: scanMove 8s linear infinite;
+      }
+      .boot-flicker {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: rgba(155, 188, 15, 0.03);
+        animation: flicker 0.15s infinite;
+      }
+      @keyframes flicker {
+        0%,
+        92%,
+        100% {
+          opacity: 1;
+        }
+        93% {
+          opacity: 0.7;
+        }
+        95% {
+          opacity: 0.9;
+        }
+        97% {
+          opacity: 0.6;
+        }
+      }
+      @keyframes scanMove {
+        from {
+          background-position: 0 0;
+        }
+        to {
+          background-position: 0 100px;
+        }
+      }
+      .boot-logo {
+        text-align: center;
+        margin-bottom: 16px;
+        color: #9bbc0f;
+        font-size: clamp(0.55rem, 2.2vw, 0.8rem);
+        text-shadow:
+          0 0 8px #9bbc0f,
+          0 0 16px rgba(155, 188, 15, 0.4);
+        animation: logoGlow 1.2s ease-in-out infinite alternate;
+        position: relative;
+        z-index: 2;
+      }
+      @keyframes logoGlow {
+        from {
+          text-shadow:
+            0 0 6px #9bbc0f,
+            0 0 12px rgba(155, 188, 15, 0.3);
+        }
+        to {
+          text-shadow:
+            0 0 14px #9bbc0f,
+            0 0 28px rgba(155, 188, 15, 0.7);
+        }
+      }
+      .boot-pokeball {
+        width: 50px;
+        height: 50px;
+        margin: 0 auto 14px;
+        position: relative;
+        z-index: 2;
+        animation: pokeballSpin 2s ease-out;
+      }
+      @keyframes pokeballSpin {
+        0% {
+          transform: rotate(0deg) scale(0);
+          opacity: 0;
+        }
+        30% {
+          opacity: 1;
+        }
+        70% {
+          transform: rotate(360deg) scale(1.1);
+        }
+        100% {
+          transform: rotate(360deg) scale(1);
+        }
+      }
+      .boot-text-area {
+        font-size: clamp(0.32rem, 1.3vw, 0.42rem);
+        color: #9bbc0f;
+        line-height: 2;
+        position: relative;
+        z-index: 2;
+        min-height: 110px;
+      }
+      .boot-line {
+        opacity: 0;
+        animation: bootLineIn 0.1s forwards;
+      }
+      @keyframes bootLineIn {
+        to {
+          opacity: 1;
+        }
+      }
+      .boot-progress-wrap {
+        margin-top: 14px;
+        background: #0a2a0a;
+        border: 2px solid #3a5a0a;
+        border-radius: 2px;
+        height: 8px;
+        overflow: hidden;
+        position: relative;
+        z-index: 2;
+      }
+      .boot-progress-fill {
+        height: 100%;
+        width: 0%;
+        background: #9bbc0f;
+        box-shadow: 0 0 8px rgba(155, 188, 15, 0.6);
+        transition: width 0.3s ease;
+      }
+      .boot-ready {
+        text-align: center;
+        margin-top: 10px;
+        font-size: 0.38rem;
+        color: #9bbc0f;
+        animation: bootPulse 0.8s ease-in-out infinite alternate;
+        position: relative;
+        z-index: 2;
+        opacity: 0;
+      }
+      @keyframes bootPulse {
+        from {
+          opacity: 0.6;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      /* ===== BODY ===== */
+      body {
+        background: var(--screen-dark);
+        font-family: "VT323", monospace;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: var(--space-lg);
+        background-image:
+          radial-gradient(circle at 20% 50%, #1a2a0a 0%, transparent 50%),
+          radial-gradient(circle at 80% 20%, #0a1a0a 0%, transparent 50%);
+      }
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 500;
+        background: repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 3px,
+          rgba(0, 0, 0, 0.025) 3px,
+          rgba(0, 0, 0, 0.025) 4px
+        );
+        animation: globalScan 14s linear infinite;
+      }
+      @keyframes globalScan {
+        from {
+          background-position: 0 0;
+        }
+        to {
+          background-position: 0 200px;
+        }
+      }
+
+      /* ===== TITLE ===== */
+      h1.title {
+        color: var(--yellow);
+        font-size: 1.6rem;
+        font-family: "Press Start 2P", monospace;
+        text-shadow:
+          3px 3px 0 var(--dark-red),
+          -1px -1px 0 #000;
+        margin-bottom: var(--space-2xl);
+        letter-spacing: 3px;
+        animation: titlePulse 2.5s infinite alternate;
+        font-weight: 700;
+      }
+      @keyframes titlePulse {
+        from {
+          text-shadow:
+            3px 3px 0 var(--dark-red),
+            0 0 8px var(--yellow);
+        }
+        to {
+          text-shadow:
+            3px 3px 0 var(--dark-red),
+            0 0 20px var(--yellow),
+            0 0 35px #ff9900;
+        }
+      }
+
+      /* ===== POKEDEX SHELL ===== */
+      .pokedex {
+        background: var(--red);
+        border-radius: 16px 16px 12px 12px;
+        width: 100%;
+        max-width: 1000px;
+        box-shadow:
+          inset -6px -6px 0 var(--dark-red),
+          inset 6px 6px 0 var(--light-red),
+          0 15px 50px var(--shadow-dark);
+        padding: var(--space-xl);
+        border: 4px solid var(--black);
+        position: relative;
+      }
+      .pokedex::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: repeating-linear-gradient(
+          90deg,
+          transparent,
+          transparent 2px,
+          rgba(0, 0, 0, 0.03) 2px,
+          rgba(0, 0, 0, 0.03) 4px
+        );
+        pointer-events: none;
+        border-radius: 16px 16px 12px 12px;
+      }
+
+      /* ===== TOP BAR ===== */
+      .top-bar {
+        display: flex;
+        align-items: center;
+        gap: var(--space-lg);
+        margin-bottom: var(--space-xl);
+        position: relative;
+        z-index: 1;
+      }
+      .big-light {
+        width: 44px;
+        height: 44px;
+        background: radial-gradient(circle at 35% 35%, #88ccff, #0044cc);
+        border-radius: 50%;
+        border: 4px solid var(--white);
+        box-shadow:
+          0 0 12px #0044cc,
+          0 0 24px #0044ff,
+          inset -2px -2px 4px rgba(0, 0, 0, 0.3);
+        animation: blinkSmooth 2.5s infinite;
+        flex-shrink: 0;
+      }
+      @keyframes blinkSmooth {
+        0%,
+        85%,
+        100% {
+          box-shadow:
+            0 0 12px #0044cc,
+            0 0 24px #0044ff,
+            inset -2px -2px 4px rgba(0, 0, 0, 0.3);
+        }
+        90% {
+          box-shadow:
+            0 0 4px #0044cc,
+            inset -2px -2px 4px rgba(0, 0, 0, 0.3);
+          opacity: 0.6;
+        }
+      }
+      .small-lights {
+        display: flex;
+        gap: var(--space-md);
+        flex-shrink: 0;
+      }
+      .dot {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 2px solid var(--black);
+        box-shadow: inset -1px -1px 2px rgba(0, 0, 0, 0.4);
+      }
+      .dot.red {
+        background: radial-gradient(circle at 30% 30%, #ff6666, #cc0000);
+        box-shadow:
+          0 0 8px #ff4444,
+          inset -1px -1px 2px rgba(0, 0, 0, 0.4);
+      }
+      .dot.yellow {
+        background: radial-gradient(circle at 30% 30%, #ffff66, #ffcc00);
+        box-shadow:
+          0 0 8px #ffdd00,
+          inset -1px -1px 2px rgba(0, 0, 0, 0.4);
+      }
+      .dot.green {
+        background: radial-gradient(circle at 30% 30%, #66ff66, #00cc00);
+        box-shadow:
+          0 0 8px #44ff44,
+          inset -1px -1px 2px rgba(0, 0, 0, 0.4);
+      }
+
+      /* ===== COMPARE BANNER ===== */
+      .compare-banner {
+        display: none;
+        background: var(--screen-dark);
+        border: 3px solid var(--yellow);
+        border-radius: 6px;
+        padding: var(--space-sm) var(--space-lg);
+        margin-bottom: var(--space-lg);
+        position: relative;
+        z-index: 1;
+        font-family: "Press Start 2P", monospace;
+        font-size: 0.38rem;
+        color: var(--yellow);
+        text-align: center;
+        box-shadow:
+          0 0 12px rgba(255, 215, 0, 0.2),
+          inset 0 2px 4px rgba(0, 0, 0, 0.4);
+        animation: bannerGlow 1.5s ease-in-out infinite alternate;
+      }
+      @keyframes bannerGlow {
+        from {
+          box-shadow: 0 0 8px rgba(255, 215, 0, 0.15);
+        }
+        to {
+          box-shadow: 0 0 18px rgba(255, 215, 0, 0.35);
+        }
+      }
+      .compare-banner.visible {
+        display: block;
+      }
+
+      /* ===== MAIN PANELS ===== */
+      .main-panel {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-xl);
+        margin-bottom: var(--space-xl);
+        position: relative;
+        z-index: 1;
+      }
+      @media (max-width: 768px) {
+        .main-panel {
+          grid-template-columns: 1fr;
+          gap: var(--space-lg);
+        }
+      }
+
+      /* ===== SCREEN CONTAINERS ===== */
+      .screen-container {
+        background: var(--dark-red);
+        border-radius: 12px;
+        padding: var(--space-md);
+        border: 4px solid var(--black);
+        box-shadow:
+          inset 0 3px 10px rgba(0, 0, 0, 0.6),
+          inset 0 -2px 4px rgba(0, 0, 0, 0.3);
+        transition: box-shadow 0.3s ease;
+        display: flex;
+        flex-direction: column;
+      }
+      .screen-container.slot-a {
+        box-shadow:
+          inset 0 3px 10px rgba(0, 0, 0, 0.6),
+          inset 0 -2px 4px rgba(0, 0, 0, 0.3),
+          0 0 0 3px #44aaff,
+          0 0 16px rgba(68, 170, 255, 0.25);
+      }
+      .screen-container.slot-b {
+        box-shadow:
+          inset 0 3px 10px rgba(0, 0, 0, 0.6),
+          inset 0 -2px 4px rgba(0, 0, 0, 0.3),
+          0 0 0 3px #ff6644,
+          0 0 16px rgba(255, 102, 68, 0.25);
+      }
+
+      .slot-label {
+        font-family: "Press Start 2P", monospace;
+        font-size: 0.38rem;
+        text-align: center;
+        padding: 4px 0 6px;
+        letter-spacing: 1px;
+        display: none;
+      }
+      .slot-label.visible {
+        display: block;
+      }
+      .slot-label.a {
+        color: #44aaff;
+        text-shadow: 0 0 6px rgba(68, 170, 255, 0.5);
+      }
+      .slot-label.b {
+        color: #ff6644;
+        text-shadow: 0 0 6px rgba(255, 102, 68, 0.5);
+      }
+
+      /* ===== NORMAL DETAIL SCREEN ===== */
+      .screen {
+        background: var(--screen-bg);
+        border: 5px solid var(--screen-dark);
+        border-radius: 6px;
+        padding: var(--space-lg);
+        min-height: 280px;
+        display: flex;
+        gap: var(--space-lg);
+        align-items: flex-start;
+        position: relative;
+        overflow: hidden;
+        box-shadow: inset 0 2px 6px rgba(15, 56, 15, 0.3);
+        animation: screenFlicker 8s infinite;
+      }
+      @keyframes screenFlicker {
+        0%,
+        89%,
+        91%,
+        93%,
+        100% {
+          opacity: 1;
+          filter: brightness(1);
+        }
+        90% {
+          opacity: 0.92;
+          filter: brightness(0.88);
+        }
+        92% {
+          opacity: 0.96;
+          filter: brightness(0.94);
+        }
+      }
+      .screen::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 3px,
+          rgba(15, 56, 15, 0.12) 3px,
+          rgba(15, 56, 15, 0.12) 4px
+        );
+        pointer-events: none;
+        border-radius: 3px;
+        animation: scanlineMove 6s linear infinite;
+      }
+      .screen::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(155, 188, 15, 0.15),
+          rgba(155, 188, 15, 0.3),
+          rgba(155, 188, 15, 0.15),
+          transparent
+        );
+        animation: scanSweep 4s linear infinite;
+        pointer-events: none;
+      }
+      @keyframes scanlineMove {
+        from {
+          background-position: 0 0;
+        }
+        to {
+          background-position: 0 60px;
+        }
+      }
+      @keyframes scanSweep {
+        from {
+          top: -4px;
+        }
+        to {
+          top: 100%;
+        }
+      }
+      .screen-shimmer {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 1;
+        background: radial-gradient(
+          ellipse at 50% 0%,
+          rgba(155, 188, 15, 0.08) 0%,
+          transparent 60%
+        );
+        animation: shimmerPulse 3s ease-in-out infinite alternate;
+      }
+      @keyframes shimmerPulse {
+        from {
+          opacity: 0.5;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      /* ===== NORMAL STATS PANEL (right, normal mode) ===== */
+      .stats-inner {
+        background: var(--screen-bg);
+        border: 5px solid var(--screen-dark);
+        border-radius: 6px;
+        padding: var(--space-lg);
+        min-height: 280px;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: inset 0 2px 6px rgba(15, 56, 15, 0.3);
+        animation: screenFlicker 11s infinite;
+      }
+      .stats-inner::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 3px,
+          rgba(15, 56, 15, 0.1) 3px,
+          rgba(15, 56, 15, 0.1) 4px
+        );
+        pointer-events: none;
+        animation: scanlineMove 8s linear infinite;
+      }
+
+      /* ===== NORMAL MODE ELEMENTS ===== */
+      .sprite-box {
+        width: 130px;
+        min-width: 130px;
+        height: 130px;
+        background: var(--screen-dark);
+        border: 3px solid rgba(0, 0, 0, 0.4);
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        box-shadow:
+          inset 0 2px 4px rgba(0, 0, 0, 0.3),
+          0 2px 4px rgba(0, 0, 0, 0.2);
+        position: relative;
+        z-index: 2;
+      }
+      .sprite-box img {
+        width: 110px;
+        height: 110px;
+        image-rendering: pixelated;
+        animation: floatSmooth 2.2s ease-in-out infinite;
+        filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.4));
+        transition: transform 0.3s ease;
+      }
+      @keyframes floatSmooth {
+        0%,
+        100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-6px);
+        }
+      }
+      .sprite-box img.bouncing {
+        animation: bouncePro 0.6s ease infinite alternate;
+      }
+      @keyframes bouncePro {
+        from {
+          transform: translateY(0);
+        }
+        to {
+          transform: translateY(-8px);
+        }
+      }
+      .no-sprite {
+        color: var(--screen-green);
+        font-size: 0.5rem;
+        text-align: center;
+        font-family: "Press Start 2P", monospace;
+        line-height: 1.4;
+      }
+      .detail-text {
+        flex: 1;
+        font-family: "VT323", monospace;
+        font-size: 1.3rem;
+        color: var(--screen-dark);
+        line-height: 1.6;
+        position: relative;
+        z-index: 2;
+      }
+      .poke-number {
+        font-size: 0.9rem;
+        color: #3a5a0a;
+        font-family: "Press Start 2P", monospace;
+        font-weight: 700;
+        letter-spacing: 1px;
+      }
+      .poke-name {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: var(--screen-dark);
+        font-family: "Press Start 2P", monospace;
+        margin: var(--space-sm) 0;
+        letter-spacing: 1px;
+      }
+      .legendary-badge {
+        display: inline-block;
+        background: var(--yellow);
+        color: var(--black);
+        font-size: 0.4rem;
+        padding: 3px 8px;
+        border-radius: 4px;
+        border: 2px solid var(--black);
+        margin-left: var(--space-sm);
+        font-family: "Press Start 2P", monospace;
+        box-shadow:
+          2px 2px 0 var(--black),
+          0 0 8px rgba(255, 215, 0, 0.6);
+        animation: shineLegendary 1.8s infinite alternate;
+        font-weight: 700;
+      }
+      @keyframes shineLegendary {
+        from {
+          box-shadow:
+            2px 2px 0 var(--black),
+            0 0 6px gold;
+        }
+        to {
+          box-shadow:
+            2px 2px 0 var(--black),
+            0 0 14px gold;
+        }
+      }
+      .type-badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 4px;
+        margin: var(--space-sm) var(--space-sm) var(--space-sm) 0;
+        font-family: "Press Start 2P", monospace;
+        font-size: 0.5rem;
+        border: 2px solid var(--screen-dark);
+        font-weight: 700;
+        transition: all 0.3s ease;
+      }
+      .type-badge:hover {
+        transform: scale(1.08);
+      }
+      .poke-desc {
+        font-size: 1.1rem;
+        margin-top: var(--space-md);
+        color: #2a4a0a;
+        line-height: 1.5;
+      }
+      .poke-stats {
+        font-size: 1rem;
+        color: #3a5a0a;
+        margin: var(--space-md) 0;
+        font-weight: 600;
+      }
+      .evolution-line {
+        font-size: 0.95rem;
+        color: #3a5a0a;
+        margin-top: var(--space-md);
+        font-weight: 600;
+      }
+      .evolution-link {
+        cursor: pointer;
+        text-decoration: underline;
+        color: #2a4a0a;
+        transition: all 0.2s ease;
+        font-weight: 700;
+      }
+      .evolution-link:hover {
+        color: var(--screen-dark);
+      }
+      .action-buttons {
+        margin-top: var(--space-lg);
+        display: flex;
+        gap: var(--space-md);
+        flex-wrap: wrap;
+      }
+
+      /* ===== NORMAL STAT BARS ===== */
+      .stats-title {
+        font-family: "Press Start 2P", monospace;
+        font-size: 0.52rem;
+        color: var(--screen-dark);
+        margin-bottom: var(--space-md);
+        font-weight: 700;
+        letter-spacing: 1px;
+        position: relative;
+        z-index: 2;
+      }
+      .stats-content {
+        position: relative;
+        z-index: 2;
+        flex: 1;
+      }
+      .stat-row {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+        margin-bottom: var(--space-md);
+        padding: var(--space-sm);
+        border-radius: 4px;
+        transition: all 0.3s ease;
+      }
+      .stat-row:hover {
+        background: rgba(15, 56, 15, 0.15);
+        transform: translateX(2px);
+      }
+      .stat-label {
+        font-family: "Press Start 2P", monospace;
+        font-size: 0.4rem;
+        color: var(--screen-dark);
+        width: 70px;
+        flex-shrink: 0;
+        font-weight: 700;
+      }
+      .stat-bar-bg {
+        flex: 1;
+        height: 12px;
+        background: var(--screen-dark);
+        border-radius: 2px;
+        overflow: hidden;
+        border: 1px solid #4a6a1a;
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+      }
+      .stat-bar-fill {
+        height: 100%;
+        border-radius: 2px;
+        transition: width 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+        width: 0%;
+      }
+      .stat-value {
+        font-family: "VT323", monospace;
+        font-size: 1.1rem;
+        color: var(--screen-dark);
+        width: 35px;
+        text-align: right;
+        font-weight: 700;
+      }
+      .stat-hp {
+        background: linear-gradient(90deg, #ff6666, #ff3333);
+      }
+      .stat-atk {
+        background: linear-gradient(90deg, #ffaa33, #ff8800);
+      }
+      .stat-def {
+        background: linear-gradient(90deg, #ffff66, #ffcc00);
+      }
+      .stat-spa {
+        background: linear-gradient(90deg, #88bbff, #5588ff);
+      }
+      .stat-spd {
+        background: linear-gradient(90deg, #88ddff, #44ccff);
+      }
+      .stat-spe {
+        background: linear-gradient(90deg, #88ff88, #44ff44);
+      }
+      .stat-total-row {
+        margin-top: var(--space-md);
+        padding-top: var(--space-md);
+        border-top: 2px solid var(--screen-dark);
+        display: flex;
+        justify-content: space-between;
+        font-family: "Press Start 2P", monospace;
+        font-size: 0.4rem;
+        color: var(--screen-dark);
+        font-weight: 700;
+      }
+
+      /* ===== COMPARE SCREEN (shared for both panels) ===== */
+      /* The screen/stats-inner gets compare-view class, becomes column layout */
+      .screen.compare-view,
+      .stats-inner.compare-view {
+        flex-direction: column;
+        align-items: stretch;
+        padding: var(--space-md) var(--space-md) var(--space-sm);
+        gap: 0;
+        min-height: 0;
+      }
+
+      /* Fighter header: sprite + name/type side by side */
+      .cmp-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding-bottom: var(--space-sm);
+        border-bottom: 2px solid rgba(15, 56, 15, 0.4);
+        margin-bottom: var(--space-sm);
+        position: relative;
+        z-index: 2;
+      }
+      .cmp-sprite-wrap {
+        width: 76px;
+        height: 76px;
+        flex-shrink: 0;
+        background: var(--screen-dark);
+        border: 2px solid rgba(0, 0, 0, 0.35);
+        border-radius: 6px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+      .cmp-sprite {
+        width: 64px;
+        height: 64px;
+        image-rendering: pixelated;
+        animation: floatSmooth 2.2s ease-in-out infinite;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+      }
+      .cmp-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .cmp-num {
+        font-family: "Press Start 2P", monospace;
+        font-size: 0.34rem;
+        color: #3a5a0a;
+        font-weight: 700;
+        margin-bottom: 2px;
+      }
+      .cmp-name {
+        font-family: "Press Start 2P", monospace;
+        font-size: 0.52rem;
+        color: var(--screen-dark);
+        font-weight: 700;
+        margin-bottom: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .cmp-types {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 3px;
+        margin-bottom: 3px;
+      }
+      .cmp-type-badge {
+        display: inline-block;
+        padding: 2px 7px;
+        border-radius: 3px;
+        font-family: "Press Start 2P", monospace;
+        font-size: 0.32rem;
+        border: 1px solid var(--screen-dark);
+        font-weight: 700;
+      }
+      .cmp-hw {
+        font-family: "VT323", monospace;
+        font-size: 0.92rem;
+        color: #3a5a0a;
+        margin-top: 2px;
+      }
+
+      /* Compact stat rows */
+      .cmp-stats {
+        position: relative;
+        z-index: 2;
+      }
+      .cmp-stat-row {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-bottom: 4px;
+        padding: 3px 4px;
+        border-radius: 3px;
+        transition: all 0.3s ease;
+      }
+      .cmp-stat-row.winner {
+        background: rgba(15, 56, 15, 0.25);
+        box-shadow:
+          0 0 7px rgba(155, 188, 15, 0.4),
+          inset 0 0 4px rgba(155, 188, 15, 0.12);
+        animation: winGlow 1.3s ease-in-out infinite alternate;
+      }
+      @keyframes winGlow {
+        from {
+          box-shadow: 0 0 5px rgba(155, 188, 15, 0.3);
+        }
+        to {
+          box-shadow: 0 0 12px rgba(155, 188, 15, 0.6);
+        }
+      }
+      .cmp-stat-label {
+        font-family: "Press Start 2P", monospace;
+        font-size: 0.3rem;
+        color: var(--screen-dark);
+        width: 42px;
+        flex-shrink: 0;
+        font-weight: 700;
+      }
+      .cmp-stat-bar-bg {
+        flex: 1;
+        height: 8px;
+        background: var(--screen-dark);
+        border-radius: 2px;
+        overflow: hidden;
+        border: 1px solid #4a6a1a;
+      }
+      .cmp-stat-bar-fill {
+        height: 100%;
+        border-radius: 2px;
+        transition: width 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+        width: 0%;
+      }
+      .cmp-stat-val {
+        font-family: "VT323", monospace;
+        font-size: 0.95rem;
+        color: var(--screen-dark);
+        width: 26px;
+        text-align: right;
+        font-weight: 700;
+      }
+      .cmp-trophy {
+        font-size: 0.65rem;
+        width: 13px;
+        text-align: center;
+        flex-shrink: 0;
+        animation: trophyPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+      }
+      @keyframes trophyPop {
+        from {
+          transform: scale(0);
+          opacity: 0;
+        }
+        to {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      /* Total + winner badge */
+      .cmp-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: "Press Start 2P", monospace;
+        font-size: 0.36rem;
+        color: var(--screen-dark);
+        border-top: 2px solid rgba(15, 56, 15, 0.5);
+        margin-top: 5px;
+        padding-top: 5px;
+        position: relative;
+        z-index: 2;
+      }
+      .cmp-total.total-winner {
+        background: rgba(155, 188, 15, 0.18);
+        border-radius: 3px;
+        padding: 3px 6px;
+        animation: winGlow 1.3s ease-in-out infinite alternate;
+      }
+      .cmp-winner-badge {
+        position: relative;
+        z-index: 2;
+        font-family: "Press Start 2P", monospace;
+        font-size: 0.36rem;
+        background: var(--yellow);
+        color: var(--black);
+        border: 2px solid var(--black);
+        border-radius: 4px;
+        padding: 4px 10px;
+        text-align: center;
+        box-shadow: 3px 3px 0 var(--black);
+        animation: badgeIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s both;
+        margin-top: 6px;
+      }
+      @keyframes badgeIn {
+        from {
+          transform: scale(0) rotate(-4deg);
+          opacity: 0;
+        }
+        to {
+          transform: scale(1) rotate(0);
+          opacity: 1;
+        }
+      }
+
+      /* VS label between the two screens */
+      .vs-overlay {
+        display: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-family: "Press Start 2P", monospace;
+        font-size: 1.05rem;
+        color: var(--yellow);
+        text-shadow:
+          3px 3px 0 var(--black),
+          0 0 16px rgba(255, 215, 0, 0.5);
+        z-index: 10;
+        pointer-events: none;
+        animation: vsPulse 0.9s ease-in-out infinite alternate;
+      }
+      @keyframes vsPulse {
+        from {
+          transform: translate(-50%, -50%) scale(1);
+        }
+        to {
+          transform: translate(-50%, -50%) scale(1.15);
+        }
+      }
+      .vs-overlay.visible {
+        display: block;
+      }
+
+      /* ===== CONTROLS ===== */
+      .control-section {
+        background: var(--dark-red);
+        border-radius: 12px;
+        padding: var(--space-lg);
+        border: 4px solid var(--black);
+        box-shadow:
+          inset 0 3px 10px rgba(0, 0, 0, 0.6),
+          inset 0 -2px 4px rgba(0, 0, 0, 0.3);
+        margin-bottom: var(--space-xl);
+        position: relative;
+        z-index: 1;
+      }
+      .controls {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: var(--space-md);
+      }
+      .controls input,
+      .controls select {
+        font-family: "VT323", monospace;
+        font-size: 1rem;
+        background: var(--screen-bg);
+        color: var(--screen-dark);
+        border: 3px solid var(--black);
+        padding: var(--space-md) var(--space-lg);
+        border-radius: 6px;
+        outline: none;
+        transition: all 0.3s ease;
+        font-weight: 600;
+      }
+      .controls input::placeholder {
+        color: #5a8a2a;
+        font-family: "VT323", monospace;
+      }
+      .controls input:focus,
+      .controls select:focus {
+        box-shadow:
+          0 0 0 3px var(--yellow),
+          inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        transform: scale(1.02);
+      }
+
+      /* ===== BUTTONS ===== */
+      .btn {
+        font-family: "Press Start 2P", monospace;
+        font-size: 0.45rem;
+        padding: var(--space-md) var(--space-lg);
+        border: 3px solid var(--black);
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 4px 4px 0 var(--black);
+        white-space: nowrap;
+        font-weight: 700;
+        letter-spacing: 1px;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .btn::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.15);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      .btn:hover::before {
+        opacity: 1;
+      }
+      .btn:active {
+        transform: translate(3px, 3px);
+        box-shadow: 1px 1px 0 var(--black);
+      }
+      .btn-red {
+        background: var(--red);
+        color: white;
+      }
+      .btn-red:hover {
+        background: var(--light-red);
+        box-shadow: 5px 5px 0 var(--black);
+      }
+      .btn-blue {
+        background: var(--blue-btn);
+        color: white;
+      }
+      .btn-blue:hover {
+        background: #4466bb;
+        box-shadow: 5px 5px 0 var(--black);
+      }
+      .btn-yellow {
+        background: var(--yellow);
+        color: var(--black);
+      }
+      .btn-yellow:hover {
+        background: #ffed4e;
+        box-shadow: 5px 5px 0 var(--black);
+      }
+      .btn-green {
+        background: var(--green-accent);
+        color: white;
+      }
+      .btn-green:hover {
+        background: #7ab839;
+        box-shadow: 5px 5px 0 var(--black);
+      }
+      .btn-gray {
+        background: var(--dark-gray);
+        color: white;
+      }
+      .btn-gray:hover {
+        background: #666;
+        box-shadow: 5px 5px 0 var(--black);
+      }
+      .btn-purple {
+        background: #7733aa;
+        color: white;
+      }
+      .btn-purple:hover {
+        background: #8844bb;
+        box-shadow: 5px 5px 0 var(--black);
+      }
+      .btn-small {
+        font-size: 0.35rem;
+        padding: var(--space-sm) var(--space-md);
+        box-shadow: 2px 2px 0 var(--black);
+      }
+      .btn-small:active {
+        transform: translate(1px, 1px);
+        box-shadow: 0 0 0 var(--black);
+      }
+
+      /* ===== GRID LABEL ===== */
+      .grid-label {
+        font-size: 0.55rem;
+        color: var(--yellow);
+        margin-bottom: var(--space-md);
+        text-shadow: 2px 2px 0 var(--black);
+        font-family: "Press Start 2P", monospace;
+        font-weight: 700;
+        letter-spacing: 1px;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+      }
+      .count-badge {
+        background: var(--yellow);
+        color: var(--black);
+        border: 3px solid var(--black);
+        border-radius: 4px;
+        padding: var(--space-sm) var(--space-md);
+        font-size: 0.45rem;
+        font-family: "Press Start 2P", monospace;
+        font-weight: 700;
+        box-shadow: 2px 2px 0 var(--black);
+        animation: countPulse 0.4s ease;
+      }
+      @keyframes countPulse {
+        0% {
+          transform: scale(1.1);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      /* ===== POKEMON GRID ===== */
+      .pokemon-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+        gap: var(--space-md);
+        max-height: 350px;
+        overflow-y: auto;
+        padding: var(--space-md);
+        background: var(--dark-red);
+        border-radius: 12px;
+        border: 4px solid var(--black);
+        box-shadow:
+          inset 0 3px 10px rgba(0, 0, 0, 0.6),
+          inset 0 -2px 4px rgba(0, 0, 0, 0.3);
+        position: relative;
+        z-index: 1;
+      }
+      .pokemon-grid::-webkit-scrollbar {
+        width: 10px;
+      }
+      .pokemon-grid::-webkit-scrollbar-track {
+        background: var(--dark-red);
+        border-radius: 5px;
+      }
+      .pokemon-grid::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, var(--yellow), #ffaa00);
+        border-radius: 5px;
+      }
+
+      /* ===== POKEMON CARD ===== */
+      .poke-card {
+        background: linear-gradient(
+          135deg,
+          var(--screen-bg) 0%,
+          var(--light-green) 100%
+        );
+        border: 3px solid var(--black);
+        border-radius: 8px;
+        padding: var(--space-md);
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow:
+          4px 4px 0 var(--black),
+          inset 0 1px 2px rgba(255, 255, 255, 0.3);
+        position: relative;
+        overflow: hidden;
+        animation: cardFadeIn 0.3s ease both;
+      }
+      @keyframes cardFadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .poke-card:hover {
+        transform: translate(-3px, -3px);
+        box-shadow: 7px 7px 0 var(--black);
+        border-color: var(--yellow);
+        background: linear-gradient(
+          135deg,
+          var(--light-green) 0%,
+          #c4d93d 100%
+        );
+      }
+      .poke-card.selected {
+        border-color: var(--yellow);
+        box-shadow:
+          0 0 0 3px var(--yellow),
+          4px 4px 0 var(--black);
+        background: linear-gradient(135deg, #d4e94f 0%, #e8f541 100%);
+        transform: scale(1.05);
+      }
+      .poke-card.legendary-card {
+        border-color: gold;
+        background: linear-gradient(135deg, #ffd700 20%, var(--screen-bg) 100%);
+      }
+      .poke-card.legendary-card:hover {
+        box-shadow:
+          0 0 12px gold,
+          7px 7px 0 var(--black);
+      }
+      .poke-card.compare-a {
+        border-color: #44aaff;
+        box-shadow:
+          0 0 0 3px #44aaff,
+          4px 4px 0 var(--black);
+      }
+      .poke-card.compare-b {
+        border-color: #ff6644;
+        box-shadow:
+          0 0 0 3px #ff6644,
+          4px 4px 0 var(--black);
+      }
+      .poke-card img {
+        width: 60px;
+        height: 60px;
+        image-rendering: pixelated;
+        display: block;
+        margin: 0 auto var(--space-md);
+        position: relative;
+        z-index: 2;
+        transition: transform 0.3s ease;
+      }
+      .poke-card:hover img {
+        transform: scale(1.1);
+      }
+      .card-num {
+        font-size: 0.4rem;
+        color: var(--screen-dark);
+        margin-bottom: var(--space-xs);
+        font-family: "Press Start 2P", monospace;
+        font-weight: 700;
+      }
+      .card-name {
+        font-size: 0.45rem;
+        color: var(--screen-dark);
+        word-break: break-word;
+        font-family: "Press Start 2P", monospace;
+        font-weight: 700;
+        margin-bottom: var(--space-xs);
+      }
+      .card-type {
+        font-size: 0.35rem;
+        color: var(--screen-dark);
+        margin-top: var(--space-xs);
+        font-family: "VT323", monospace;
+        font-weight: 600;
+      }
+      .legendary-star {
+        position: absolute;
+        top: 4px;
+        right: 6px;
+        font-size: 1rem;
+        animation: starTwinkle 1.5s infinite alternate;
+        z-index: 3;
+      }
+      @keyframes starTwinkle {
+        from {
+          text-shadow: 0 0 4px gold;
+          opacity: 1;
+        }
+        to {
+          text-shadow: 0 0 12px gold;
+          opacity: 0.8;
+        }
+      }
+
+      /* ===== STATUS BAR ===== */
+      .status-bar {
+        background: var(--screen-dark);
+        border: 3px solid var(--black);
+        border-radius: 6px;
+        padding: var(--space-md) var(--space-lg);
+        margin-bottom: var(--space-xl);
+        font-family: "VT323", monospace;
+        font-size: 1.1rem;
+        color: var(--screen-green);
+        min-height: 40px;
+        display: flex;
+        align-items: center;
+        position: relative;
+        z-index: 1;
+        box-shadow:
+          inset 0 2px 4px rgba(0, 0, 0, 0.5),
+          0 2px 6px rgba(0, 0, 0, 0.3);
+        animation: slideInDown 0.3s ease;
+      }
+      @keyframes slideInDown {
+        from {
+          transform: translateY(-10px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+      .status-bar.error {
+        color: #ff6666;
+        background: rgba(255, 100, 100, 0.15);
+        border-color: #ff4444;
+      }
+      .status-bar.success {
+        color: #66ff66;
+        background: rgba(100, 255, 100, 0.15);
+        border-color: #44ff44;
+      }
+
+      /* ===== MODAL ===== */
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.88);
+        z-index: 200;
+        align-items: center;
+        justify-content: center;
+        padding: var(--space-lg);
+        animation: fadeInOverlay 0.3s ease;
+      }
+      @keyframes fadeInOverlay {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      .modal-overlay.open {
+        display: flex;
+      }
+      .modal {
+        background: var(--red);
+        border: 5px solid var(--black);
+        border-radius: 14px;
+        padding: var(--space-xl);
+        width: 90%;
+        max-width: 500px;
+        box-shadow:
+          inset -4px -4px 0 var(--dark-red),
+          inset 4px 4px 0 var(--light-red),
+          0 25px 60px rgba(0, 0, 0, 0.85);
+        animation: popInModal 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+      @keyframes popInModal {
+        from {
+          transform: scale(0.85);
+          opacity: 0;
+        }
+        to {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+      .modal h2 {
+        font-size: 0.75rem;
+        color: var(--yellow);
+        margin-bottom: var(--space-lg);
+        text-shadow: 3px 3px 0 var(--black);
+        font-family: "Press Start 2P", monospace;
+        font-weight: 700;
+        letter-spacing: 2px;
+      }
+      .modal label {
+        display: block;
+        font-size: 0.42rem;
+        color: var(--white);
+        margin-bottom: var(--space-sm);
+        margin-top: var(--space-md);
+        font-family: "Press Start 2P", monospace;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+      .modal input,
+      .modal select,
+      .modal textarea {
+        width: 100%;
+        font-family: "VT323", monospace;
+        font-size: 1rem;
+        background: var(--screen-bg);
+        color: var(--screen-dark);
+        border: 3px solid var(--black);
+        padding: var(--space-md);
+        border-radius: 6px;
+        outline: none;
+        transition: all 0.3s ease;
+        font-weight: 600;
+      }
+      .modal input:focus,
+      .modal select:focus,
+      .modal textarea:focus {
+        box-shadow:
+          0 0 0 3px var(--yellow),
+          inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        transform: scale(1.01);
+      }
+      .modal textarea {
+        resize: vertical;
+        min-height: 70px;
+      }
+      .modal-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: var(--space-md);
+      }
+      .modal-btns {
+        display: flex;
+        gap: var(--space-md);
+        margin-top: var(--space-lg);
+        justify-content: flex-end;
+      }
+      .modal-section {
+        font-size: 0.45rem;
+        color: var(--yellow);
+        margin-top: var(--space-lg);
+        margin-bottom: var(--space-md);
+        border-bottom: 3px solid rgba(255, 255, 255, 0.3);
+        padding-bottom: var(--space-md);
+        font-family: "Press Start 2P", monospace;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      /* ===== BOTTOM DECO ===== */
+      .bottom-deco {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: var(--space-xl);
+        position: relative;
+        z-index: 1;
+        gap: var(--space-lg);
+      }
+      .dpad {
+        display: grid;
+        grid-template-columns: repeat(3, 20px);
+        grid-template-rows: repeat(3, 20px);
+        gap: 2px;
+      }
+      .dpad-btn {
+        background: var(--black);
+        border-radius: 2px;
+        box-shadow:
+          inset 0 1px 2px rgba(0, 0, 0, 0.6),
+          0 2px 4px rgba(0, 0, 0, 0.4);
+      }
+      .dpad-btn.center {
+        border-radius: 50%;
+        background: #444;
+        box-shadow:
+          inset 0 1px 2px rgba(255, 255, 255, 0.2),
+          0 2px 4px rgba(0, 0, 0, 0.4);
+      }
+      .dpad-btn.empty {
+        background: transparent;
+        box-shadow: none;
+      }
+      .ab-btns {
+        display: flex;
+        gap: var(--space-lg);
+        align-items: center;
+      }
+      .circle-btn {
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        border: 3px solid var(--black);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.55rem;
+        color: white;
+        font-family: "Press Start 2P", monospace;
+        font-weight: 700;
+        box-shadow:
+          4px 4px 0 var(--black),
+          inset -2px -2px 4px rgba(0, 0, 0, 0.4);
+        transition: all 0.2s ease;
+      }
+      .circle-btn:hover {
+        transform: scale(1.08);
+      }
+      .circle-btn.a {
+        background: linear-gradient(135deg, #ff5555, #cc0000);
+      }
+      .circle-btn.b {
+        background: linear-gradient(135deg, #5555ff, #0000cc);
+      }
+
+      /* ===== TYPE COLORS ===== */
+      .type-Fire {
+        background: #ff6b35;
+        color: white;
+      }
+      .type-Water {
+        background: #3399ff;
+        color: white;
+      }
+      .type-Grass {
+        background: #44bb44;
+        color: white;
+      }
+      .type-Poison {
+        background: #9944cc;
+        color: white;
+      }
+      .type-Electric {
+        background: #ffcc00;
+        color: black;
+      }
+      .type-Psychic {
+        background: #ff4499;
+        color: white;
+      }
+      .type-Normal {
+        background: #aaaaaa;
+        color: black;
+      }
+      .type-Flying {
+        background: #88aaff;
+        color: black;
+      }
+      .type-Bug {
+        background: #aacc22;
+        color: black;
+      }
+      .type-Ghost {
+        background: #7766ee;
+        color: white;
+      }
+      .type-Ice {
+        background: #66ccff;
+        color: black;
+      }
+      .type-Fairy {
+        background: #ffaacc;
+        color: black;
+      }
+      .type-Dragon {
+        background: #7766ee;
+        color: white;
+      }
+      .type-Rock {
+        background: #bbaa66;
+        color: black;
+      }
+      .type-Ground {
+        background: #ddbb55;
+        color: black;
+      }
+      .type-Fighting {
+        background: #cc4422;
+        color: white;
+      }
+      .type-Steel {
+        background: #aaaacc;
+        color: black;
+      }
+
+      /* ===== RESPONSIVE ===== */
+      @media (max-width: 768px) {
+        .main-panel {
+          grid-template-columns: 1fr;
+        }
+        .vs-overlay {
+          display: none !important;
+        }
+      }
+      @media (max-width: 600px) {
+        h1.title {
+          font-size: 1.2rem;
+          margin-bottom: var(--space-lg);
+        }
+        .pokedex {
+          padding: var(--space-lg);
+          border-radius: 12px 12px 8px 8px;
+        }
+        .screen {
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          min-height: auto;
+          padding: var(--space-md);
+        }
+        .sprite-box {
+          width: 110px;
+          height: 110px;
+        }
+        .sprite-box img {
+          width: 90px;
+          height: 90px;
+        }
+        .poke-name {
+          font-size: 1.4rem;
+        }
+        .detail-text {
+          font-size: 1.1rem;
+        }
+        .stats-inner {
+          min-height: 220px;
+          padding: var(--space-md);
+        }
+        .pokemon-grid {
+          grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+          gap: var(--space-sm);
+          max-height: 300px;
+          padding: var(--space-sm);
+        }
+        .poke-card {
+          padding: var(--space-sm);
+        }
+        .poke-card img {
+          width: 50px;
+          height: 50px;
+          margin-bottom: var(--space-sm);
+        }
+        .controls {
+          grid-template-columns: 1fr;
+          gap: var(--space-sm);
+        }
+        .action-buttons {
+          flex-direction: column;
+        }
+        .action-buttons .btn {
+          width: 100%;
+        }
+        .modal {
+          max-width: 95%;
+          padding: var(--space-lg);
+        }
+        .modal-row {
+          grid-template-columns: 1fr;
+        }
+        .bottom-deco {
+          flex-direction: column;
+          gap: var(--space-md);
+        }
+      }
+      @media (max-width: 480px) {
+        .pokedex {
+          padding: var(--space-md);
+        }
+        h1.title {
+          font-size: 1rem;
+          letter-spacing: 1px;
+        }
+        .top-bar {
+          gap: var(--space-md);
+          margin-bottom: var(--space-lg);
+        }
+        .big-light {
+          width: 36px;
+          height: 36px;
+        }
+        .dot {
+          width: 14px;
+          height: 14px;
+        }
+        .btn {
+          font-size: 0.4rem;
+          padding: var(--space-sm) var(--space-md);
+          box-shadow: 2px 2px 0 var(--black);
+        }
+        .btn:active {
+          transform: translate(1px, 1px);
+          box-shadow: 0 0 0 var(--black);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- BOOT OVERLAY -->
+    <div id="powerOnOverlay">
+      <div class="boot-screen">
+        <div class="boot-scanlines"></div>
+        <div class="boot-flicker"></div>
+        <div class="boot-pokeball">
+          <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+            <circle
+              cx="30"
+              cy="30"
+              r="28"
+              fill="none"
+              stroke="#9bbc0f"
+              stroke-width="3"
+            />
+            <path d="M2 30h56" stroke="#9bbc0f" stroke-width="3" />
+            <path d="M30 2a28 28 0 0 1 0 56" fill="rgba(155,188,15,0.2)" />
+            <circle
+              cx="30"
+              cy="30"
+              r="8"
+              fill="none"
+              stroke="#9bbc0f"
+              stroke-width="3"
+            />
+            <circle cx="30" cy="30" r="3" fill="#9bbc0f" />
+          </svg>
+        </div>
+        <div class="boot-logo">★ POKÉDEX ★<br />GENERATION I</div>
+        <div class="boot-text-area" id="bootText"></div>
+        <div class="boot-progress-wrap">
+          <div class="boot-progress-fill" id="bootProgress"></div>
+        </div>
+        <div class="boot-ready" id="bootReady">PRESS START</div>
+      </div>
+    </div>
+
+    <h1 class="title">★ POKÉDEX ★</h1>
+
+    <div class="pokedex">
+      <!-- TOP BAR -->
+      <div class="top-bar">
+        <div class="big-light"></div>
+        <div class="small-lights">
+          <div class="dot red"></div>
+          <div class="dot yellow"></div>
+          <div class="dot green"></div>
+        </div>
+      </div>
+
+      <!-- COMPARE BANNER -->
+      <div class="compare-banner" id="compareBanner">
+        ⚔ COMPARE MODE — SELECT FIGHTER A (BLUE) THEN FIGHTER B (ORANGE)
+      </div>
+
+      <!-- MAIN PANELS -->
+      <div class="main-panel" id="mainPanel" style="position: relative">
+        <!-- LEFT: detail screen / compare-A -->
+        <div class="screen-container" id="screenContainerA">
+          <div class="slot-label a" id="slotLabelA">◀ FIGHTER A</div>
+          <div class="screen" id="detailScreen">
+            <div class="screen-shimmer"></div>
+            <div class="sprite-box" id="spriteBox">
+              <div class="no-sprite">SELECT A<br />POKÉMON</div>
+            </div>
+            <div class="detail-text" id="detailText">
+              <div style="color: #4a7a0a; margin-top: 8px">
+                ► Choose a Pokémon<br />from the list below
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VS floating label -->
+        <div class="vs-overlay" id="vsOverlay">VS</div>
+
+        <!-- RIGHT: stats panel / compare-B -->
+        <div class="screen-container" id="screenContainerB">
+          <div class="slot-label b" id="slotLabelB">FIGHTER B ▶</div>
+          <div class="stats-inner" id="statsPanel">
+            <div class="stats-title">BASE STATS</div>
+            <div class="stats-content" style="color: #4a7a0a">
+              Select a Pokémon<br />to view its stats
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STATUS BAR -->
+      <div class="status-bar" id="statusBar">Ready.</div>
+
+      <!-- CONTROLS -->
+      <div class="control-section">
+        <div class="controls">
+          <input type="text" id="searchInput" placeholder="Search name..." />
+          <select id="typeFilter">
+            <option value="">All Types</option>
+            <option>Fire</option>
+            <option>Water</option>
+            <option>Grass</option>
+            <option>Poison</option>
+            <option>Electric</option>
+            <option>Psychic</option>
+            <option>Normal</option>
+            <option>Flying</option>
+            <option>Bug</option>
+            <option>Ghost</option>
+            <option>Ice</option>
+            <option>Fairy</option>
+            <option>Dragon</option>
+            <option>Rock</option>
+            <option>Ground</option>
+            <option>Fighting</option>
+            <option>Steel</option>
+          </select>
+          <select id="legendaryFilter">
+            <option value="">All Pokémon</option>
+            <option value="true">★ Legendary</option>
+            <option value="false">Non-Legendary</option>
+          </select>
+        </div>
+        <div class="controls" style="margin-top: var(--space-md)">
+          <button class="btn btn-red" onclick="loadPokemons()" style="flex: 1">
+            🔄 REFRESH
+          </button>
+          <button
+            class="btn btn-green"
+            onclick="openAddModal()"
+            style="flex: 1"
+          >
+            ＋ ADD
+          </button>
+          <button
+            class="btn btn-purple"
+            id="compareToggleBtn"
+            onclick="toggleCompareMode()"
+            style="flex: 1"
+          >
+            ⚔ COMPARE
+          </button>
+        </div>
+      </div>
+
+      <!-- GRID LABEL -->
+      <div class="grid-label">
+        POKÉMON LIST <span class="count-badge" id="gridCount">0</span>
+        <span
+          id="compareHint"
+          style="
+            font-size: 0.32rem;
+            color: rgba(255, 255, 255, 0.55);
+            display: none;
+          "
+          >CMP MODE</span
+        >
+      </div>
+
+      <!-- POKEMON GRID -->
+      <div class="pokemon-grid" id="pokemonGrid">
+        <div
+          style="
+            color: var(--screen-green);
+            font-size: 0.5rem;
+            padding: 10px;
+            position: relative;
+            z-index: 2;
+          "
+        >
+          Loading...
+        </div>
+      </div>
+
+      <!-- BOTTOM DECO -->
+      <div class="bottom-deco">
+        <div class="dpad">
+          <div class="dpad-btn empty"></div>
+          <div class="dpad-btn"></div>
+          <div class="dpad-btn empty"></div>
+          <div class="dpad-btn"></div>
+          <div class="dpad-btn center"></div>
+          <div class="dpad-btn"></div>
+          <div class="dpad-btn empty"></div>
+          <div class="dpad-btn"></div>
+          <div class="dpad-btn empty"></div>
+        </div>
+        <div
+          style="
+            font-size: 0.4rem;
+            color: rgba(255, 255, 255, 0.5);
+            font-family: &quot;Press Start 2P&quot;, monospace;
+            letter-spacing: 1px;
+          "
+        >
+          GEN I POKÉDEX
+        </div>
+        <div class="ab-btns">
+          <div class="circle-btn b">B</div>
+          <div class="circle-btn a">A</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADD/EDIT MODAL -->
+    <div class="modal-overlay" id="modalOverlay">
+      <div class="modal">
+        <h2 id="modalTitle">ADD POKÉMON</h2>
+        <div class="modal-section">BASIC INFO</div>
+        <label>POKÉDEX NO.</label
+        ><input type="number" id="fId" placeholder="e.g. 152" />
+        <label>NAME</label
+        ><input type="text" id="fName" placeholder="e.g. Chikorita" />
+        <div class="modal-row">
+          <div>
+            <label>PRIMARY TYPE</label>
+            <select id="fType">
+              <option>Fire</option>
+              <option>Water</option>
+              <option>Grass</option>
+              <option>Poison</option>
+              <option>Electric</option>
+              <option>Psychic</option>
+              <option>Normal</option>
+              <option>Flying</option>
+              <option>Bug</option>
+              <option>Ghost</option>
+              <option>Ice</option>
+              <option>Fairy</option>
+              <option>Dragon</option>
+              <option>Rock</option>
+              <option>Ground</option>
+              <option>Fighting</option>
+              <option>Steel</option>
+            </select>
+          </div>
+          <div>
+            <label>SECONDARY TYPE</label>
+            <select id="fType2">
+              <option value="">None</option>
+              <option>Fire</option>
+              <option>Water</option>
+              <option>Grass</option>
+              <option>Poison</option>
+              <option>Electric</option>
+              <option>Psychic</option>
+              <option>Normal</option>
+              <option>Flying</option>
+              <option>Bug</option>
+              <option>Ghost</option>
+              <option>Ice</option>
+              <option>Fairy</option>
+              <option>Dragon</option>
+              <option>Rock</option>
+              <option>Ground</option>
+              <option>Fighting</option>
+              <option>Steel</option>
+            </select>
+          </div>
+          <div>
+            <label>LEGENDARY</label>
+            <select id="fLegendary">
+              <option value="false">No</option>
+              <option value="true">Yes ★</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-row">
+          <div>
+            <label>HEIGHT (m)</label
+            ><input type="number" step="0.1" id="fHeight" placeholder="0.9" />
+          </div>
+          <div>
+            <label>WEIGHT (kg)</label
+            ><input type="number" step="0.1" id="fWeight" placeholder="6.4" />
+          </div>
+          <div></div>
+        </div>
+        <div class="modal-section">BASE STATS</div>
+        <div class="modal-row">
+          <div>
+            <label>HP</label><input type="number" id="fHP" placeholder="45" />
+          </div>
+          <div>
+            <label>ATTACK</label
+            ><input type="number" id="fAtk" placeholder="49" />
+          </div>
+          <div>
+            <label>DEFENSE</label
+            ><input type="number" id="fDef" placeholder="49" />
+          </div>
+        </div>
+        <div class="modal-row">
+          <div>
+            <label>SP.ATK</label
+            ><input type="number" id="fSpA" placeholder="65" />
+          </div>
+          <div>
+            <label>SP.DEF</label
+            ><input type="number" id="fSpD" placeholder="65" />
+          </div>
+          <div>
+            <label>SPEED</label
+            ><input type="number" id="fSpd" placeholder="45" />
+          </div>
+        </div>
+        <div class="modal-section">EVOLUTION</div>
+        <div class="modal-row">
+          <div>
+            <label>EVOLVES FROM ID</label
+            ><input type="number" id="fEvoFrom" placeholder="null" />
+          </div>
+          <div>
+            <label>EVOLVES TO ID</label
+            ><input type="number" id="fEvoTo" placeholder="null" />
+          </div>
+          <div></div>
+        </div>
+        <div class="modal-section">DESCRIPTION</div>
+        <textarea id="fDesc" placeholder="Pokédex entry..."></textarea>
+        <div class="modal-btns">
+          <button class="btn btn-gray" onclick="closeModal()">CANCEL</button>
+          <button class="btn btn-green" onclick="savePokemon()">SAVE</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* ===== BOOT ===== */
+      const bootLines = [
+        "GAME BOY POKÉDEX v2.0",
+        "COPYRIGHT 1996 NINTENDO",
+        "",
+        "INITIALIZING POKÉDEX...",
+        "LOADING POKÉMON DATABASE...",
+        "CHECKING SPRITE DATA... OK",
+        "LOADING TYPE CHART... OK",
+        "SYSTEM READY!",
+      ];
+      function runBoot() {
+        const ta = document.getElementById("bootText"),
+          pr = document.getElementById("bootProgress"),
+          rd = document.getElementById("bootReady");
+        let i = 0;
+        function next() {
+          if (i >= bootLines.length) {
+            pr.style.width = "100%";
+            rd.style.opacity = "1";
+            setTimeout(finishBoot, 1100);
+            return;
+          }
+          const d = document.createElement("div");
+          d.className = "boot-line";
+          d.style.animationDelay = "0s";
+          d.textContent = bootLines[i] || "\u00a0";
+          ta.appendChild(d);
+          pr.style.width = Math.round((i / bootLines.length) * 100) + "%";
+          i++;
+          setTimeout(next, i < 3 ? 200 : 130);
+        }
+        setTimeout(next, 500);
+      }
+      function finishBoot() {
+        const ov = document.getElementById("powerOnOverlay");
+        ov.classList.add("fading");
+        setTimeout(() => {
+          ov.classList.add("hidden");
+        }, 850);
+      }
+      runBoot();
+
+      /* ===== STATE ===== */
+      const API = "http://localhost:5010/api/pokemon";
+      let allPokemons = [],
+        editingId = null,
+        selectedId = null,
+        isShiny = false;
+      let compareMode = false,
+        compareA = null,
+        compareB = null;
+
+      /* ===== HELPERS ===== */
+      async function apiFetch(url, opts = {}) {
+        const r = await fetch(url, opts);
+        if (!r.ok) {
+          const e = await r.text();
+          throw new Error(`API ${r.status}: ${e}`);
+        }
+        if (r.status === 204) return null;
+        return r.json();
+      }
+      const spriteUrl = (id) =>
+        `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+      const shinyUrl = (id) =>
+        `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${id}.png`;
+      const typeBadge = (t, small) =>
+        t
+          ? `<span class="${small ? "cmp-type-badge" : "type-badge"} type-${t}">${t}</span>`
+          : "";
+      const fallbackSvg = (w, h) =>
+        `data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22${w}%22 height=%22${h}%22><text y=%22${Math.round(h * 0.75)}%22 font-size=%22${Math.round(h * 0.7)}%22>❓</text></svg>`;
+
+      /* ===== LOAD ===== */
+      async function loadPokemons() {
+        setStatus("Loading Pokémon data...", "");
+        const search = document.getElementById("searchInput").value.trim();
+        const type = document.getElementById("typeFilter").value;
+        const legendary = document.getElementById("legendaryFilter").value;
+        try {
+          let url = API;
+          if (search) url = `${API}/search?name=${encodeURIComponent(search)}`;
+          else if (type) url = `${API}/type?type=${encodeURIComponent(type)}`;
+          let list = await apiFetch(url);
+          if (legendary === "true") list = list.filter((p) => p.isLegendary);
+          if (legendary === "false") list = list.filter((p) => !p.isLegendary);
+          allPokemons = list;
+          renderGrid(allPokemons);
+          setStatus(`✓ ${allPokemons.length} Pokémon loaded.`, "success");
+          document.getElementById("gridCount").textContent = allPokemons.length;
+        } catch (e) {
+          console.error(e);
+          setStatus(`✗ ${e.message || "Cannot connect to API."}`, "error");
+          document.getElementById("pokemonGrid").innerHTML =
+            '<div style="color:#FF6666;font-size:0.5rem;padding:10px;position:relative;z-index:2;">API offline</div>';
+        }
+      }
+
+      function renderGrid(list) {
+        const grid = document.getElementById("pokemonGrid");
+        if (!list.length) {
+          grid.innerHTML =
+            '<div style="color:var(--screen-green);font-size:0.5rem;padding:10px;position:relative;z-index:2;">No Pokémon found.</div>';
+          return;
+        }
+        grid.innerHTML = list
+          .map(
+            (p, idx) => `
+        <div class="poke-card ${p.isLegendary ? "legendary-card" : ""} ${compareA && compareA.id === p.id ? "compare-a" : ""} ${compareB && compareB.id === p.id ? "compare-b" : ""}"
+             id="card-${p.id}" onclick="handleCardClick(${p.id})" style="animation-delay:${idx * 0.025}s">
+          ${p.isLegendary ? '<span class="legendary-star">★</span>' : ""}
+          <div class="card-num">#${String(p.id).padStart(3, "0")}</div>
+          <img src="${spriteUrl(p.id)}" alt="${p.name}" loading="lazy" onerror="this.src='${fallbackSvg(60, 60)}'"/>
+          <div class="card-name">${p.name.toUpperCase()}</div>
+          <div class="card-type">${p.type}${p.type2 ? "/" + p.type2 : ""}</div>
+        </div>`,
+          )
+          .join("");
+      }
+
+      function handleCardClick(id) {
+        compareMode ? setCompare(id) : selectPokemon(id);
+      }
+
+      /* ===== NORMAL SELECT ===== */
+      function selectPokemon(id) {
+        const p = allPokemons.find((x) => x.id === id);
+        if (!p) return;
+        selectedId = id;
+        isShiny = false;
+        document
+          .querySelectorAll(".poke-card")
+          .forEach((c) => c.classList.remove("selected"));
+        document.getElementById("card-" + id)?.classList.add("selected");
+
+        // Restore normal screen class
+        const scr = document.getElementById("detailScreen");
+        scr.classList.remove("compare-view");
+
+        document.getElementById("spriteBox").innerHTML = `
+        <img id="mainSprite" src="${spriteUrl(p.id)}" alt="${p.name}" class="bouncing"
+             onerror="this.src='${fallbackSvg(110, 110)}'"/>`;
+
+        const evoFrom = p.evolvesFromId
+          ? `<span class="evolution-link" onclick="selectPokemonById(${p.evolvesFromId})">#${String(p.evolvesFromId).padStart(3, "0")}</span> ▶ `
+          : "";
+        const evoTo = p.evolvesToId
+          ? ` ▶ <span class="evolution-link" onclick="selectPokemonById(${p.evolvesToId})">#${String(p.evolvesToId).padStart(3, "0")}</span>`
+          : "";
+        const evoLine =
+          p.evolvesFromId || p.evolvesToId
+            ? `<div class="evolution-line">EVO: ${evoFrom}#${String(p.id).padStart(3, "0")}${evoTo}</div>`
+            : "";
+
+        document.getElementById("detailText").innerHTML = `
+        <div class="poke-number">#${String(p.id).padStart(3, "0")}</div>
+        <div class="poke-name">${p.name.toUpperCase()}${p.isLegendary ? '<span class="legendary-badge">★ LEGENDARY</span>' : ""}</div>
+        <div style="margin:var(--space-md) 0;">${typeBadge(p.type)}${typeBadge(p.type2)}</div>
+        <div class="poke-stats">HT: ${p.height.toFixed(1)}m &nbsp; WT: ${p.weight.toFixed(1)}kg</div>
+        <div class="poke-desc">${p.description}</div>
+        ${evoLine}
+        <div class="action-buttons">
+          <button class="btn btn-blue btn-small" onclick="openEditModal(${p.id})">✏ EDIT</button>
+          <button class="btn btn-red btn-small" onclick="deletePokemon(${p.id})">✕ DELETE</button>
+          <button class="btn btn-yellow btn-small" id="shinyBtn" onclick="toggleShiny(${p.id})">✨ SHINY</button>
+        </div>`;
+        renderStats(p);
+      }
+
+      function toggleShiny(id) {
+        isShiny = !isShiny;
+        const img = document.getElementById("mainSprite"),
+          btn = document.getElementById("shinyBtn");
+        if (!img) return;
+        if (isShiny) {
+          img.src = shinyUrl(id);
+          btn.textContent = "⬛ NORMAL";
+          btn.style.background = "#9944cc";
+          btn.style.color = "white";
+          setStatus("✨ Shiny form activated!", "success");
+        } else {
+          img.src = spriteUrl(id);
+          btn.textContent = "✨ SHINY";
+          btn.style.background = "var(--yellow)";
+          btn.style.color = "var(--black)";
+          setStatus("↩ Normal form restored.", "");
+        }
+      }
+
+      function renderStats(p) {
+        const stats = [
+          { label: "HP", val: p.hp, cls: "stat-hp", max: 255 },
+          { label: "ATK", val: p.attack, cls: "stat-atk", max: 190 },
+          { label: "DEF", val: p.defense, cls: "stat-def", max: 230 },
+          { label: "Sp.A", val: p.spAttack, cls: "stat-spa", max: 194 },
+          { label: "Sp.D", val: p.spDefense, cls: "stat-spd", max: 230 },
+          { label: "SPE", val: p.speed, cls: "stat-spe", max: 200 },
+        ];
+        const total = stats.reduce((s, st) => s + (st.val || 0), 0);
+        document.getElementById("statsPanel").innerHTML = `
+        <div class="stats-title" style="position:relative;z-index:2;">BASE STATS — ${p.name.toUpperCase()}</div>
+        <div class="stats-content">
+          ${stats
+            .map(
+              (s) => `
+            <div class="stat-row">
+              <div class="stat-label">${s.label}</div>
+              <div class="stat-bar-bg"><div class="stat-bar-fill ${s.cls}" style="width:${Math.min(100, Math.round((s.val / s.max) * 100))}%"></div></div>
+              <div class="stat-value">${s.val ?? "?"}</div>
+            </div>`,
+            )
+            .join("")}
+          <div class="stat-total-row"><span>TOTAL</span><span>${total}</span></div>
+        </div>`;
+      }
+
+      function selectPokemonById(id) {
+        const p = allPokemons.find((x) => x.id === id);
+        if (p) selectPokemon(id);
+      }
+
+      /* ===== STAT DEFINITIONS ===== */
+      const statDefs = [
+        { key: "hp", label: "HP", cls: "stat-hp", max: 255 },
+        { key: "attack", label: "ATK", cls: "stat-atk", max: 190 },
+        { key: "defense", label: "DEF", cls: "stat-def", max: 230 },
+        { key: "spAttack", label: "Sp.A", cls: "stat-spa", max: 194 },
+        { key: "spDefense", label: "Sp.D", cls: "stat-spd", max: 230 },
+        { key: "speed", label: "SPE", cls: "stat-spe", max: 200 },
+      ];
+
+      /* ===== COMPARE MODE ===== */
+      function toggleCompareMode() {
+        compareMode = !compareMode;
+        const btn = document.getElementById("compareToggleBtn");
+        const hint = document.getElementById("compareHint");
+        const banner = document.getElementById("compareBanner");
+        if (compareMode) {
+          btn.textContent = "✕ EXIT";
+          btn.style.background = "#aa3333";
+          hint.style.display = "inline";
+          banner.classList.add("visible");
+          compareA = null;
+          compareB = null;
+          showSlotLabels(false, false);
+          document.getElementById("vsOverlay").classList.remove("visible");
+          setStatus("⚔ Compare Mode: Click a Pokémon for Fighter A", "");
+        } else {
+          btn.textContent = "⚔ COMPARE";
+          btn.style.background = "";
+          hint.style.display = "none";
+          banner.classList.remove("visible");
+          compareA = null;
+          compareB = null;
+          restoreNormalScreens();
+          document.getElementById("vsOverlay").classList.remove("visible");
+          showSlotLabels(false, false);
+          renderGrid(allPokemons);
+          setStatus("Compare Mode off.", "");
+        }
+      }
+
+      function showSlotLabels(a, b) {
+        const la = document.getElementById("slotLabelA"),
+          lb = document.getElementById("slotLabelB");
+        const ca = document.getElementById("screenContainerA"),
+          cb = document.getElementById("screenContainerB");
+        if (a) {
+          la.classList.add("visible");
+          ca.classList.add("slot-a");
+        } else {
+          la.classList.remove("visible");
+          ca.classList.remove("slot-a");
+        }
+        if (b) {
+          lb.classList.add("visible");
+          cb.classList.add("slot-b");
+        } else {
+          lb.classList.remove("visible");
+          cb.classList.remove("slot-b");
+        }
+      }
+
+      function setCompare(id) {
+        const p = allPokemons.find((x) => x.id === id);
+        if (!p) return;
+        if (!compareA) {
+          compareA = p;
+          showSlotLabels(true, false);
+          renderCompareLeft(p, null);
+          // Reset right to waiting state
+          restoreRightScreen();
+          setStatus(
+            `⚔ Fighter A: ${p.name.toUpperCase()}. Now pick Fighter B (orange)!`,
+            "success",
+          );
+        } else if (!compareB && id !== compareA.id) {
+          compareB = p;
+          showSlotLabels(true, true);
+          document.getElementById("vsOverlay").classList.add("visible");
+          renderCompareLeft(compareA, compareB);
+          renderCompareRight(compareB, compareA);
+          setStatus(
+            `⚔ ${compareA.name.toUpperCase()} vs ${compareB.name.toUpperCase()} — BATTLE!`,
+            "success",
+          );
+        } else if (id === compareA.id) {
+          // Deselect A → reset both
+          compareA = null;
+          compareB = null;
+          restoreNormalScreens();
+          showSlotLabels(false, false);
+          document.getElementById("vsOverlay").classList.remove("visible");
+          setStatus("⚔ Cleared. Select Fighter A again.", "");
+        } else if (compareB && id === compareB.id) {
+          // Deselect B
+          compareB = null;
+          document.getElementById("vsOverlay").classList.remove("visible");
+          showSlotLabels(true, false);
+          renderCompareLeft(compareA, null);
+          restoreRightScreen();
+          setStatus(
+            `⚔ Fighter A: ${compareA.name.toUpperCase()}. Select Fighter B.`,
+            "",
+          );
+        } else {
+          // Swap Fighter B
+          compareB = p;
+          showSlotLabels(true, true);
+          document.getElementById("vsOverlay").classList.add("visible");
+          renderCompareLeft(compareA, compareB);
+          renderCompareRight(compareB, compareA);
+          setStatus(
+            `⚔ ${compareA.name.toUpperCase()} vs ${compareB.name.toUpperCase()} — BATTLE!`,
+            "success",
+          );
+        }
+        renderGrid(allPokemons);
+      }
+
+      /* Build compare HTML for one fighter */
+      function buildCompareHTML(p, opponent) {
+        const hasOpponent = !!opponent;
+        const total = statDefs.reduce((s, k) => s + (p[k.key] || 0), 0);
+        const oppTotal = opponent
+          ? statDefs.reduce((s, k) => s + (opponent[k.key] || 0), 0)
+          : null;
+        const totalWin = hasOpponent && total > oppTotal;
+
+        const statRows = statDefs
+          .map((k) => {
+            const mine = p[k.key] || 0;
+            const other = opponent ? opponent[k.key] || 0 : null;
+            const winning = hasOpponent && mine > other;
+            const barPct = Math.min(100, Math.round((mine / k.max) * 100));
+            const trophy = winning
+              ? `<span class="cmp-trophy">🏆</span>`
+              : `<span class="cmp-trophy" style="opacity:0;pointer-events:none;">🏆</span>`;
+            return `<div class="cmp-stat-row ${winning ? "winner" : ""}">
+          <span class="cmp-stat-label">${k.label}</span>
+          <div class="cmp-stat-bar-bg"><div class="cmp-stat-bar-fill ${k.cls}" style="width:${barPct}%"></div></div>
+          <span class="cmp-stat-val">${mine}</span>
+          ${trophy}
+        </div>`;
+          })
+          .join("");
+
+        const winBadge =
+          hasOpponent && totalWin
+            ? `<div class="cmp-winner-badge">🏆 WINNER!</div>`
+            : "";
+
+        return `
+        <div class="cmp-header">
+          <div class="cmp-sprite-wrap">
+            <img class="cmp-sprite" src="${spriteUrl(p.id)}" alt="${p.name}"
+                 onerror="this.src='${fallbackSvg(64, 64)}'"/>
+          </div>
+          <div class="cmp-info">
+            <div class="cmp-num">#${String(p.id).padStart(3, "0")}${p.isLegendary ? " ★" : ""}</div>
+            <div class="cmp-name">${p.name.toUpperCase()}</div>
+            <div class="cmp-types">${typeBadge(p.type, true)}${typeBadge(p.type2, true)}</div>
+            <div class="cmp-hw">${p.height.toFixed(1)}m / ${p.weight.toFixed(1)}kg</div>
+          </div>
+        </div>
+        <div class="cmp-stats">${statRows}</div>
+        <div class="cmp-total ${totalWin ? "total-winner" : ""}">
+          <span>TOTAL</span><span>${total}${totalWin ? " 🏆" : ""}</span>
+        </div>
+        ${winBadge}`;
+      }
+
+      /* Render compare into LEFT screen (detailScreen) */
+      function renderCompareLeft(p, opponent) {
+        const scr = document.getElementById("detailScreen");
+        scr.classList.add("compare-view");
+        scr.innerHTML =
+          `<div class="screen-shimmer"></div>` + buildCompareHTML(p, opponent);
+      }
+
+      /* Render compare into RIGHT panel (statsPanel) */
+      function renderCompareRight(p, opponent) {
+        const sp = document.getElementById("statsPanel");
+        sp.className = "stats-inner compare-view";
+        sp.innerHTML = buildCompareHTML(p, opponent);
+      }
+
+      function restoreNormalScreens() {
+        // Left
+        const scr = document.getElementById("detailScreen");
+        scr.classList.remove("compare-view");
+        scr.innerHTML = `
+        <div class="screen-shimmer"></div>
+        <div class="sprite-box" id="spriteBox"><div class="no-sprite">SELECT A<br/>POKÉMON</div></div>
+        <div class="detail-text" id="detailText">
+          <div style="color:#4a7a0a;margin-top:8px;">► Choose a Pokémon<br/>from the list below</div>
+        </div>`;
+        // Right
+        const sp = document.getElementById("statsPanel");
+        sp.className = "stats-inner";
+        sp.innerHTML =
+          '<div class="stats-title">BASE STATS</div><div class="stats-content" style="color:#4a7a0a;">Select a Pokémon<br/>to view its stats</div>';
+      }
+
+      function restoreRightScreen() {
+        const sp = document.getElementById("statsPanel");
+        sp.className = "stats-inner";
+        sp.innerHTML =
+          '<div class="stats-title">BASE STATS</div><div class="stats-content" style="color:#4a7a0a;">Select Fighter B to compare</div>';
+      }
+
+      /* ===== CRUD ===== */
+      /* ===== DELETE CONFIRMATION ===== */
+      let pendingDeleteId = null;
+
+      function deletePokemon(id) {
+        const p = allPokemons.find((x) => x.id === id);
+        if (!p) return;
+        pendingDeleteId = id;
+        document.getElementById("deleteModalName").textContent =
+          p.name.toUpperCase();
+        document.getElementById("deleteModalOverlay").classList.add("open");
+      }
+
+      function closeDeleteModal() {
+        document.getElementById("deleteModalOverlay").classList.remove("open");
+        pendingDeleteId = null;
+      }
+
+      async function confirmDelete() {
+        if (!pendingDeleteId) return;
+        const id = pendingDeleteId;
+        const p = allPokemons.find((x) => x.id === id);
+        closeDeleteModal();
+        try {
+          await apiFetch(`${API}/${id}`, { method: "DELETE" });
+          setStatus(`✓ ${p?.name} deleted.`, "success");
+          resetDetail();
+          loadPokemons();
+        } catch (e) {
+          setStatus(`✗ Delete failed: ${e.message}`, "error");
+        }
+      }
+      function openAddModal() {
+        editingId = null;
+        document.getElementById("modalTitle").textContent = "ADD POKÉMON";
+        document.getElementById("fId").disabled = false;
+        [
+          "fId",
+          "fName",
+          "fHeight",
+          "fWeight",
+          "fDesc",
+          "fHP",
+          "fAtk",
+          "fDef",
+          "fSpA",
+          "fSpD",
+          "fSpd",
+          "fEvoFrom",
+          "fEvoTo",
+        ].forEach((id) => (document.getElementById(id).value = ""));
+        document.getElementById("fType").value = "Normal";
+        document.getElementById("fType2").value = "";
+        document.getElementById("fLegendary").value = "false";
+        document.getElementById("modalOverlay").classList.add("open");
+      }
+      function openEditModal(id) {
+        const p = allPokemons.find((x) => x.id === id);
+        if (!p) return;
+        editingId = id;
+        document.getElementById("modalTitle").textContent = "EDIT POKÉMON";
+        document.getElementById("fId").value = p.id;
+        document.getElementById("fId").disabled = true;
+        document.getElementById("fName").value = p.name;
+        document.getElementById("fType").value = p.type;
+        document.getElementById("fType2").value = p.type2 || "";
+        document.getElementById("fLegendary").value = p.isLegendary
+          ? "true"
+          : "false";
+        document.getElementById("fHeight").value = p.height;
+        document.getElementById("fWeight").value = p.weight;
+        document.getElementById("fHP").value = p.hp;
+        document.getElementById("fAtk").value = p.attack;
+        document.getElementById("fDef").value = p.defense;
+        document.getElementById("fSpA").value = p.spAttack;
+        document.getElementById("fSpD").value = p.spDefense;
+        document.getElementById("fSpd").value = p.speed;
+        document.getElementById("fEvoFrom").value = p.evolvesFromId ?? "";
+        document.getElementById("fEvoTo").value = p.evolvesToId ?? "";
+        document.getElementById("fDesc").value = p.description;
+        document.getElementById("modalOverlay").classList.add("open");
+      }
+      function closeModal() {
+        document.getElementById("modalOverlay").classList.remove("open");
+      }
+      async function savePokemon() {
+        const body = {
+          id: parseInt(document.getElementById("fId").value) || 0,
+          name: document.getElementById("fName").value.trim(),
+          type: document.getElementById("fType").value,
+          type2: document.getElementById("fType2").value || null,
+          isLegendary: document.getElementById("fLegendary").value === "true",
+          height: parseFloat(document.getElementById("fHeight").value) || 0,
+          weight: parseFloat(document.getElementById("fWeight").value) || 0,
+          hp: parseInt(document.getElementById("fHP").value) || 0,
+          attack: parseInt(document.getElementById("fAtk").value) || 0,
+          defense: parseInt(document.getElementById("fDef").value) || 0,
+          spAttack: parseInt(document.getElementById("fSpA").value) || 0,
+          spDefense: parseInt(document.getElementById("fSpD").value) || 0,
+          speed: parseInt(document.getElementById("fSpd").value) || 0,
+          evolvesFromId:
+            parseInt(document.getElementById("fEvoFrom").value) || null,
+          evolvesToId:
+            parseInt(document.getElementById("fEvoTo").value) || null,
+          description: document.getElementById("fDesc").value.trim(),
+        };
+        if (!body.name) {
+          setStatus("✗ Name is required!", "error");
+          return;
+        }
+        const opts = {
+          method: editingId ? "PUT" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        };
+        const url = editingId ? `${API}/${editingId}` : API;
+        try {
+          await apiFetch(url, opts);
+          const savedId = editingId;
+          setStatus(
+            `✓ ${body.name} ${editingId ? "updated" : "added"}!`,
+            "success",
+          );
+          closeModal();
+          await loadPokemons();
+          if (savedId) selectPokemon(savedId);
+        } catch (e) {
+          setStatus(`✗ Save failed: ${e.message}`, "error");
+        }
+      }
+
+      function setStatus(msg, type) {
+        const b = document.getElementById("statusBar");
+        b.textContent = msg;
+        b.className = "status-bar" + (type ? " " + type : "");
+      }
+      function resetDetail() {
+        selectedId = null;
+        isShiny = false;
+        restoreNormalScreens();
+      }
+
+      let searchTimeout;
+      document.getElementById("searchInput").addEventListener("input", () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => loadPokemons(), 300);
+      });
+      document
+        .getElementById("typeFilter")
+        .addEventListener("change", () => loadPokemons());
+      document
+        .getElementById("legendaryFilter")
+        .addEventListener("change", () => loadPokemons());
+      document.getElementById("modalOverlay").addEventListener("click", (e) => {
+        if (e.target === document.getElementById("modalOverlay")) closeModal();
+      });
+      document.addEventListener("keydown", (e) => {
+        if (!selectedId || compareMode) return;
+        if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+        const idx = allPokemons.findIndex((p) => p.id === selectedId);
+        if (e.key === "ArrowRight" && idx < allPokemons.length - 1)
+          selectPokemon(allPokemons[idx + 1].id);
+        if (e.key === "ArrowLeft" && idx > 0)
+          selectPokemon(allPokemons[idx - 1].id);
+      });
+
+      loadPokemons();
+    </script>
+    <!-- DELETE CONFIRMATION MODAL -->
+    <div class="modal-overlay" id="deleteModalOverlay">
+      <div class="modal" style="max-width: 380px; text-align: center">
+        <div style="font-size: 2rem; margin-bottom: var(--space-lg)">⚠️</div>
+        <h2
+          style="
+            font-size: 0.6rem;
+            color: #ff4444;
+            text-shadow: 2px 2px 0 var(--black);
+          "
+        >
+          DELETE POKÉMON?
+        </h2>
+        <div
+          style="
+            background: var(--screen-bg);
+            border: 3px solid var(--screen-dark);
+            border-radius: 6px;
+            padding: var(--space-lg);
+            margin: var(--space-lg) 0;
+            font-family: &quot;Press Start 2P&quot;, monospace;
+            font-size: 0.5rem;
+            color: var(--screen-dark);
+            line-height: 1.8;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+          "
+        >
+          <span
+            id="deleteModalName"
+            style="
+              color: #8b0000;
+              font-size: 0.6rem;
+              display: block;
+              margin-bottom: var(--space-sm);
+            "
+          ></span>
+          This cannot be undone!
+        </div>
+        <div
+          class="modal-btns"
+          style="justify-content: center; gap: var(--space-xl)"
+        >
+          <button
+            class="btn btn-gray"
+            onclick="closeDeleteModal()"
+            style="min-width: 100px"
+          >
+            ✕ CANCEL
+          </button>
+          <button
+            class="btn btn-red"
+            onclick="confirmDelete()"
+            style="min-width: 100px"
+          >
+            🗑 DELETE
+          </button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

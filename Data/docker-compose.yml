@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:16
+    container_name: downloads-db
+    environment:
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: P@ssword123
+      POSTGRES_DB: downloads-db
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
