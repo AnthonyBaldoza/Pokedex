@@ -26,9 +26,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// PostgreSQL Database — kinukuha ang connection string mula sa appsettings.json
+// SQL Server Database — kinukuha ang connection string mula sa appsettings
 builder.Services.AddDbContext<PokedexDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // ============================================================
 // DEPENDENCY INJECTION REGISTRATIONS
